@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级拍卖会系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            grid-template-rows: 80px 1fr 100px;
+            grid-template-areas: 
+                "header header"
+                "main sidebar"
+                "footer footer";
+            height: 100vh;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .header {
+            grid-area: header;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 36px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .main-area {
+            grid-area: main;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar {
+            grid-area: sidebar;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .footer {
+            grid-area: footer;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-management {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .item-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .item-card {
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .item-card:hover {
+            border-color: #667eea;
+            background: #e8eaf6;
+        }
+
+        .item-card.active {
+            border-color: #27ae60;
+            background: #e8f5e9;
+            border-width: 3px;
+        }
+
+        .item-card-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-card-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+
+        .item-card-details {
+            flex: 1;
+        }
+
+        .item-card-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .item-card-price {
+            color: #e74c3c;
+            font-size: 14px;
+        }
+
+        .item-card-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .text-button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .text-button.edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .text-button.delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .text-button:hover {
+            transform: scale(1.05);
+        }
+
+        .header-button {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .header-button:hover {
+            transform: scale(1.05);
+        }
+
+        .item-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+        .empty-state-text {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        .add-item-button {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-item-button:hover {
+            transform: scale(1.05);
+        }
+
+        .item-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 15px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 3px solid #f0f0f0;
+            display: none; /* 默认隐藏 */
+        }
+
+        .item-image.visible {
+            display: block; /* 有图片时显示 */
+        }
+
+        .item-info h2 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .item-description {
+            font-size: 18px;
+            color: #666;
+            text-align: center;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        .current-price {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .price-label {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .price-amount {
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .bid-controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .bid-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            min-width: 120px;
+        }
+
+        .bid-button:hover {
+            transform: scale(1.05);
+        }
+
+        .bid-button:active {
+            transform: scale(0.95);
+        }
+
+        .bid-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .bid-input {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 20px;
+            width: 150px;
+            text-align: center;
+        }
+
+        .bid-confirm {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .bid-history {
+            flex: 1;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 150px;
+        }
+
+        .bid-record {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .bidder-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .bid-amount {
+            font-size: 18px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .bid-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .participant-management {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .participant-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .participant-input {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .add-participant-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .participant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .participant {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .remove-participant {
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .control-button {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .control-button:hover {
+            transform: scale(1.05);
+        }
+
+        .control-button.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .control-button.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .control-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auction-status {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 20px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .form-button.primary {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+        }
+
+        .form-button.secondary {
+            background: #bdc3c7;
+            color: #333;
+        }
+
+        .winner-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .winner-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            animation: bounce 0.5s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .winner-text {
+            font-size: 36px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        .winner-info {
+            font-size: 24px;
+            color: #333;
+        }
+
+        /* 图片上传相关样式 */
+        .image-upload-section {
+            margin-bottom: 15px;
+        }
+
+        .image-upload-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .upload-tab {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #ddd;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .upload-tab.active {
+            border-color: #27ae60;
+            background: #e8f5e9;
+            color: #27ae60;
+        }
+
+        .upload-content {
+            display: none;
+        }
+
+        .upload-content.active {
+            display: block;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8f9fa;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #e8eaf6;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #27ae60;
+            background: #e8f5e9;
+        }
+
+        .file-upload-input {
+            display: none;
+        }
+
+        .file-upload-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            display: none;
+        }
+
+        .image-preview.visible {
+            display: block;
+        }
+
+        .remove-image-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 80px 1fr 400px 100px;
+                grid-template-areas: 
+                    "header"
+                    "main"
+                    "sidebar"
+                    "footer";
+            }
+            
+            .sidebar {
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>班级拍卖会系统</h1>
+            <button class="header-button" onclick="showAddItemModal()">添加物品</button>
+        </div>
+
+        <div class="main-area">
+            <div class="item-display" id="itemDisplay">
+                <div class="empty-state">
+                    <div class="empty-state-text">暂无拍卖物品</div>
+                    <button class="add-item-button" onclick="showAddItemModal()">添加第一个拍卖物品</button>
+                </div>
+            </div>
+
+            <div id="auctionInterface" style="display: none; width: 100%;">
+                <div class="item-display">
+                    <img class="item-image" id="itemImage" alt="物品图片">
+                    <div class="item-info">
+                        <h2 id="itemName">物品名称</h2>
+                        <p class="item-description" id="itemDescription">物品描述</p>
+                        <div class="current-price">
+                            <div class="price-label">当前价格</div>
+                            <div class="price-amount" id="currentPrice">¥0</div>
+                        </div>
+                        <div class="bid-controls">
+                            <button class="bid-button" onclick="quickBid(10)">+¥10</button>
+                            <button class="bid-button" onclick="quickBid(50)">+¥50</button>
+                            <button class="bid-button" onclick="quickBid(100)">+¥100</button>
+                            <div class="bid-input-group">
+                                <input type="number" class="bid-input" id="customBid" placeholder="自定义">
+                                <button class="bid-confirm" onclick="customBid()">出价</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="item-management">
+                <h3>物品管理</h3>
+                <div class="item-list" id="itemList">
+                    <div class="empty-state" style="padding: 20px; font-size: 14px;">暂无物品，请添加拍卖物品</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>出价记录</h3>
+                <div class="bid-history" id="bidHistory">
+                    <div class="empty-state">暂无出价记录</div>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>竞拍者管理</h3>
+                <div class="participant-management">
+                    <div class="participant-input-group">
+                        <input type="text" class="participant-input" id="participantName" placeholder="输入竞拍者姓名">
+                        <button class="add-participant-btn" onclick="addParticipant()">添加</button>
+                    </div>
+                    <div class="participant-list" id="participantList">
+                        <div style="color: #999; font-size: 14px;">暂无竞拍者</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="auction-status" id="auctionStatus">等待开始</div>
+            <button class="control-button" onclick="startAuction()" id="startButton" disabled>开始拍卖</button>
+            <button class="control-button success" onclick="sold()" id="soldButton" disabled>成交</button>
+            <button class="control-button danger" onclick="unsold()" id="unsoldButton" disabled>流拍</button>
+            <button class="control-button" onclick="nextItem()" id="nextButton" disabled>下一个</button>
+        </div>
+    </div>
+
+    <!-- 添加/编辑物品模态框 -->
+    <div class="modal" id="itemModal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">添加拍卖物品</div>
+            <form id="itemForm">
+                <div class="form-group">
+                    <label>物品名称 *</label>
+                    <input type="text" id="itemNameInput" placeholder="输入物品名称" required>
+                </div>
+                <div class="form-group">
+                    <label>物品描述</label>
+                    <textarea id="itemDescInput" placeholder="输入物品描述（可选）"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>起拍价格 *</label>
+                    <input type="number" id="itemPriceInput" placeholder="输入起拍价格" min="1" required>
+                </div>
+                
+                <!-- 图片上传区域 -->
+                <div class="form-group">
+                    <label>物品图片（可选）</label>
+                    <div class="image-upload-section">
+                        <div class="image-upload-tabs">
+                            <div class="upload-tab active" onclick="switchUploadTab('url')">图片链接</div>
+                            <div class="upload-tab" onclick="switchUploadTab('file')">本地上传</div>
+                        </div>
+                        
+                        <div id="urlUpload" class="upload-content active">
+                            <input type="url" id="itemImageInput" placeholder="输入图片链接地址，如：https://example.com/image.jpg">
+                        </div>
+                        
+                        <div id="fileUpload" class="upload-content">
+                            <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                                <div class="file-upload-text">📷 点击或拖拽图片到此处上传</div>
+                                <button type="button" class="file-upload-button">选择图片</button>
+                                <input type="file" id="fileInput" class="file-upload-input" accept="image/*">
+                            </div>
+                            <img id="imagePreview" class="image-preview">
+                            <button type="button" id="removeImageBtn" class="remove-image-btn" style="display: none;" onclick="removeLocalImage()">移除图片</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-buttons">
+                    <button type="button" class="form-button secondary" onclick="closeItemModal()">取消</button>
+                    <button type="submit" class="form-button primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 选择竞拍者模态框 -->
+    <div class="modal" id="bidderModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">选择竞拍者</div>
+            <div id="bidderList" style="max-height: 300px; overflow-y: auto;">
+                <!-- 动态生成竞拍者列表 -->
+            </div>
+            <div class="form-buttons">
+                <button class="form-button secondary" onclick="closeBidderModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成交动画 -->
+    <div class="winner-animation" id="winnerAnimation">
+        <div class="winner-content">
+            <div class="winner-text">拍卖成交！</div>
+            <div class="winner-info" id="winnerInfo"></div>
+            <button class="control-button" onclick="closeWinner()" style="margin-top: 20px;">确定</button>
+        </div>
+    </div>
+
+    <script>
+        // 拍卖系统核心数据
+        let auctionState = {
+            currentItem: null,
+            currentPrice: 0,
+            isActive: false,
+            bidHistory: [],
+            auctionItems: [],
+            currentItemIndex: 0,
+            participants: [],
+            currentBidder: null,
+            editingItemIndex: -1,
+            pendingBid: null,
+            localImageData: null // 存储本地图片的Base64数据
+        };
+
+        // 初始化
+        function init() {
+            updateItemList();
+            updateParticipantList();
+            updateControlButtons();
+            setupFileUpload();
+        }
+
+        // 切换上传标签
+        function switchUploadTab(tab) {
+            document.querySelectorAll('.upload-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.upload-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'url') {
+                document.querySelectorAll('.upload-tab')[0].classList.add('active');
+                document.getElementById('urlUpload').classList.add('active');
+            } else {
+                document.querySelectorAll('.upload-tab')[1].classList.add('active');
+                document.getElementById('fileUpload').classList.add('active');
+            }
+        }
+
+        // 设置文件上传
+        function setupFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('fileUploadArea');
+            
+            // 文件选择事件
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+            
+            // 拖拽上传
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        // 处理文件选择（无大小限制）
+        function handleFileSelect(file) {
+            // 只检查是否为图片文件
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                auctionState.localImageData = e.target.result;
+                displayImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 显示图片预览
+        function displayImagePreview(imageData) {
+            const preview = document.getElementById('imagePreview');
+            preview.src = imageData;
+            preview.classList.add('visible');
+            document.getElementById('removeImageBtn').style.display = 'inline-block';
+        }
+
+        // 移除本地图片
+        function removeLocalImage() {
+            auctionState.localImageData = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('imagePreview').classList.remove('visible');
+            document.getElementById('removeImageBtn').style.display = 'none';
+        }
+
+        // 显示添加物品模态框
+        function showAddItemModal() {
+            document.getElementById('modalTitle').textContent = '添加拍卖物品';
+            document.getElementById('itemForm').reset();
+            auctionState.editingItemIndex = -1;
+            auctionState.localImageData = null;
+            removeLocalImage();
+            switchUploadTab('url');
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        // 显示编辑物品模态框
+        function showEditItemModal(index) {
+            const item = auctionState.auctionItems[index];
+            document.getElementById('modalTitle').textContent = '编辑拍卖物品';
+            document.getElementById('itemNameInput').value = item.name;
+            document.getElementById('itemDescInput').value = item.description;
+            document.getElementById('itemPriceInput').value = item.startPrice;
+            
+            // 处理图片
+            auctionState.localImageData = null;
+            removeLocalImage();
+            
+            if (item.imageUrl) {
+                if (item.imageUrl.startsWith('data:')) {
+                    // 本地图片
+                    switchUploadTab('file');
+                    auctionState.localImageData = item.imageUrl;
+                    displayImagePreview(item.imageUrl);
+                } else {
+                    // 网络图片
+                    switchUploadTab('url');
+                    document.getElementById('itemImageInput').value = item.imageUrl;
+                }
+            } else {
+                switchUploadTab('url');
+            }
+            
+            auctionState.editingItemIndex = index;
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        // 关闭物品模态框
+        function closeItemModal() {
+            document.getElementById('itemModal').style.display = 'none';
+            document.getElementById('itemForm').reset();
+            auctionState.editingItemIndex = -1;
+            auctionState.localImageData = null;
+            removeLocalImage();
+        }
+
+        // 处理物品表单提交
+        document.getElementById('itemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const item = {
+                id: Date.now(),
+                name: document.getElementById('itemNameInput').value,
+                description: document.getElementById('itemDescInput').value || '暂无描述',
+                startPrice: parseInt(document.getElementById('itemPriceInput').value),
+                imageUrl: null
+            };
+
+            // 处理图片
+            const activeTab = document.querySelector('.upload-tab.active').textContent;
+            if (activeTab === '图片链接') {
+                const url = document.getElementById('itemImageInput').value.trim();
+                if (url) {
+                    item.imageUrl = url;
+                }
+            } else if (activeTab === '本地上传' && auctionState.localImageData) {
+                item.imageUrl = auctionState.localImageData;
+            }
+
+            if (auctionState.editingItemIndex >= 0) {
+                auctionState.auctionItems[auctionState.editingItemIndex] = item;
+            } else {
+                auctionState.auctionItems.push(item);
+            }
+
+            closeItemModal();
+            updateItemList();
+            
+            if (!auctionState.currentItem) {
+                loadNextItem();
+            }
+        });
+
+        // 删除物品
+        function deleteItem(index) {
+            if (confirm('确定要删除这个物品吗？')) {
+                auctionState.auctionItems.splice(index, 1);
+                
+                if (auctionState.currentItemIndex === index) {
+                    auctionState.currentItem = null;
+                    auctionState.isActive = false;
+                    showEmptyState();
+                } else if (auctionState.currentItemIndex > index) {
+                    auctionState.currentItemIndex--;
+                }
+                
+                updateItemList();
+                updateControlButtons();
+            }
+        }
+
+        // 加载物品
+        function loadItem(index) {
+            if (index >= auctionState.auctionItems.length) return;
+            
+            auctionState.currentItemIndex = index;
+            auctionState.currentItem = auctionState.auctionItems[index];
+            auctionState.currentPrice = auctionState.currentItem.startPrice;
+            auctionState.bidHistory = [];
+            auctionState.isActive = false;
+            auctionState.currentBidder = null;
+            
+            showAuctionInterface();
+            updateDisplay();
+            updateControlButtons();
+            updateItemList();
+        }
+
+        // 加载下一个物品
+        function loadNextItem() {
+            if (auctionState.auctionItems.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            if (auctionState.currentItemIndex >= auctionState.auctionItems.length) {
+                alert('所有物品已拍卖完成！');
+                return;
+            }
+
+            loadItem(auctionState.currentItemIndex);
+        }
+
+        // 显示空状态
+        function showEmptyState() {
+            document.getElementById('itemDisplay').style.display = 'flex';
+            document.getElementById('auctionInterface').style.display = 'none';
+            auctionState.currentItem = null;
+            auctionState.bidHistory = [];
+            updateBidHistory();
+            updateControlButtons();
+        }
+
+        // 显示拍卖界面
+        function showAuctionInterface() {
+            document.getElementById('itemDisplay').style.display = 'none';
+            document.getElementById('auctionInterface').style.display = 'flex';
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            const item = auctionState.currentItem;
+            if (!item) return;
+
+            // 更新物品图片（如果有）
+            const itemImage = document.getElementById('itemImage');
+            if (item.imageUrl) {
+                itemImage.src = item.imageUrl;
+                itemImage.classList.add('visible');
+            } else {
+                itemImage.classList.remove('visible');
+            }
+
+            document.getElementById('itemName').textContent = item.name;
+            document.getElementById('itemDescription').textContent = item.description;
+            document.getElementById('currentPrice').textContent = `¥${auctionState.currentPrice}`;
+            
+            updateBidHistory();
+            updateStatus();
+        }
+
+        // 更新物品列表
+        function updateItemList() {
+            if (auctionState.auctionItems.length === 0) {
+                document.getElementById('itemList').innerHTML = '<div class="empty-state" style="padding: 20px; font-size: 14px;">暂无物品，请添加拍卖物品</div>';
+                return;
+            }
+
+            document.getElementById('itemList').innerHTML = auctionState.auctionItems.map((item, index) => `
+                <div class="item-card ${auctionState.currentItemIndex === index ? 'active' : ''}" onclick="loadItem(${index})">
+                    <div class="item-card-info">
+                        ${item.imageUrl ? `<img src="${item.imageUrl}" class="item-card-image" alt="${item.name}" onerror="this.style.display='none'">` : ''}
+                        <div class="item-card-details">
+                            <div class="item-card-title">${item.name}</div>
+                            <div class="item-card-price">起拍价: ¥${item.startPrice}</div>
+                        </div>
+                    </div>
+                    <div class="item-card-actions">
+                        <button class="text-button edit" onclick="event.stopPropagation(); showEditItemModal(${index})">编辑</button>
+                        <button class="text-button delete" onclick="event.stopPropagation(); deleteItem(${index})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 更新出价记录
+        function updateBidHistory() {
+            const historyContainer = document.getElementById('bidHistory');
+            
+            if (auctionState.bidHistory.length === 0) {
+                historyContainer.innerHTML = '<div class="empty-state">暂无出价记录</div>';
+                return;
+            }
+
+            historyContainer.innerHTML = auctionState.bidHistory
+                .slice()
+                .reverse()
+                .map(bid => `
+                    <div class="bid-record">
+                        <div>
+                            <div class="bidder-name">${bid.bidder}</div>
+                            <div class="bid-time">${bid.time}</div>
+                        </div>
+                        <div class="bid-amount">¥${bid.amount}</div>
+                    </div>
+                `).join('');
+        }
+
+        // 更新状态显示
+        function updateStatus() {
+            const status = document.getElementById('auctionStatus');
+            if (!auctionState.currentItem) {
+                status.textContent = '无物品';
+                status.style.color = '#999';
+            } else if (!auctionState.isActive) {
+                status.textContent = '等待开始';
+                status.style.color = '#f39c12';
+            } else {
+                status.textContent = '拍卖进行中';
+                status.style.color = '#27ae60';
+            }
+        }
+
+        // 更新控制按钮状态
+        function updateControlButtons() {
+            const hasItems = auctionState.auctionItems.length > 0;
+            const hasCurrentItem = auctionState.currentItem !== null;
+            const hasBids = auctionState.bidHistory.length > 0;
+            const hasParticipants = auctionState.participants.length > 0;
+
+            document.getElementById('startButton').disabled = !hasCurrentItem || auctionState.isActive || !hasParticipants;
+            document.getElementById('soldButton').disabled = !auctionState.isActive || !hasBids;
+            document.getElementById('unsoldButton').disabled = !hasCurrentItem || auctionState.isActive;
+            document.getElementById('nextButton').disabled = !hasItems || auctionState.isActive;
+        }
+
+        // 添加竞拍者
+        function addParticipant() {
+            const input = document.getElementById('participantName');
+            const name = input.value.trim();
+            
+            if (!name) {
+                alert('请输入竞拍者姓名');
+                return;
+            }
+
+            if (auctionState.participants.includes(name)) {
+                alert('该竞拍者已存在');
+                return;
+            }
+
+            auctionState.participants.push(name);
+            input.value = '';
+            updateParticipantList();
+            updateControlButtons();
+        }
+
+        // 删除竞拍者
+        function removeParticipant(index) {
+            auctionState.participants.splice(index, 1);
+            updateParticipantList();
+            updateControlButtons();
+        }
+
+        // 更新竞拍者列表
+        function updateParticipantList() {
+            if (auctionState.participants.length === 0) {
+                document.getElementById('participantList').innerHTML = '<div style="color: #999; font-size: 14px;">暂无竞拍者</div>';
+                return;
+            }
+
+            document.getElementById('participantList').innerHTML = auctionState.participants.map((name, index) => `
+                <div class="participant">
+                    ${name}
+                    <span class="remove-participant" onclick="removeParticipant(${index})">×</span>
+                </div>
+            `).join('');
+        }
+
+        // 显示选择竞拍者模态框
+        function showBidderModal() {
+            if (auctionState.participants.length === 0) {
+                alert('请先添加竞拍者！');
+                return;
+            }
+
+            const bidderList = document.getElementById('bidderList');
+            bidderList.innerHTML = auctionState.participants.map((name, index) => `
+                <div class="item-card" onclick="selectBidder('${name}')" style="cursor: pointer; margin-bottom: 10px;">
+                    <div class="item-card-info">
+                        <div class="item-card-title" style="margin-bottom: 0;">${name}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('bidderModal').style.display = 'flex';
+        }
+
+        // 关闭竞拍者选择模态框
+        function closeBidderModal() {
+            document.getElementById('bidderModal').style.display = 'none';
+            auctionState.pendingBid = null;
+        }
+
+        // 选择竞拍者
+        function selectBidder(name) {
+            auctionState.currentBidder = name;
+            closeBidderModal();
+            
+            if (auctionState.pendingBid !== null) {
+                executeBid(auctionState.pendingBid);
+                auctionState.pendingBid = null;
+            }
+        }
+
+        // 执行出价
+        function executeBid(amount) {
+            const bid = {
+                bidder: auctionState.currentBidder,
+                amount: amount,
+                time: new Date().toLocaleTimeString('zh-CN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                })
+            };
+            
+            auctionState.currentPrice = amount;
+            auctionState.bidHistory.push(bid);
+            
+            updateDisplay();
+            
+            const priceElement = document.getElementById('currentPrice');
+            priceElement.style.transform = 'scale(1.2)';
+            priceElement.style.color = '#f1c40f';
+            
+            setTimeout(() => {
+                priceElement.style.transform = 'scale(1)';
+                priceElement.style.color = 'white';
+            }, 300);
+        }
+
+        // 快速出价
+        function quickBid(amount) {
+            if (!auctionState.isActive) {
+                alert('请先开始拍卖！');
+                return;
+            }
+
+            if (!auctionState.currentBidder) {
+                auctionState.pendingBid = auctionState.currentPrice + amount;
+                showBidderModal();
+                return;
+            }
+            
+            const newPrice = auctionState.currentPrice + amount;
+            executeBid(newPrice);
+        }
+
+        // 自定义出价
+        function customBid() {
+            if (!auctionState.isActive) {
+                alert('请先开始拍卖！');
+                return;
+            }
+
+            const input = document.getElementById('customBid');
+            const amount = parseInt(input.value);
+            
+            if (!amount || amount <= auctionState.currentPrice) {
+                alert(`出价必须高于当前价格 ¥${auctionState.currentPrice}`);
+                return;
+            }
+
+            if (!auctionState.currentBidder) {
+                auctionState.pendingBid = amount;
+                showBidderModal();
+                return;
+            }
+            
+            executeBid(amount);
+            input.value = '';
+        }
+
+        // 开始拍卖
+        function startAuction() {
+            if (!auctionState.currentItem) {
+                alert('没有拍卖物品！');
+                return;
+            }
+
+            if (auctionState.participants.length === 0) {
+                alert('请先添加竞拍者！');
+                return;
+            }
+            
+            auctionState.isActive = true;
+            
+            const initialBid = {
+                bidder: '起拍价',
+                amount: auctionState.currentItem.startPrice,
+                time: new Date().toLocaleTimeString('zh-CN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                })
+            };
+            auctionState.bidHistory.push(initialBid);
+            
+            updateDisplay();
+            updateControlButtons();
+        }
+
+        // 成交
+        function sold() {
+            if (!auctionState.isActive || auctionState.bidHistory.length === 0) {
+                alert('当前没有进行中的拍卖！');
+                return;
+            }
+
+            const lastBid = auctionState.bidHistory[auctionState.bidHistory.length - 1];
+            
+            document.getElementById('winnerInfo').innerHTML = `
+                <div style="margin-bottom: 10px;">${lastBid.bidder}</div>
+                <div>以 ¥${lastBid.amount} 成交！</div>
+            `;
+            document.getElementById('winnerAnimation').style.display = 'flex';
+            
+            setTimeout(() => {
+                closeWinner();
+                nextItem();
+            }, 3000);
+        }
+
+        // 流拍
+        function unsold() {
+            if (auctionState.isActive) {
+                alert('请先结束当前拍卖！');
+                return;
+            }
+
+            if (!auctionState.currentItem) return;
+
+            if (confirm('确定要将此物品流拍吗？')) {
+                auctionState.currentItemIndex++;
+                loadNextItem();
+            }
+        }
+
+        // 下一个物品
+        function nextItem() {
+            auctionState.currentItemIndex++;
+            loadNextItem();
+        }
+
+        // 关闭成交动画
+        function closeWinner() {
+            document.getElementById('winnerAnimation').style.display = 'none';
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' && auctionState.isActive) {
+                e.preventDefault();
+                quickBid(10);
+            } else if (e.key === 'Enter' && auctionState.isActive) {
+                e.preventDefault();
+                sold();
+            }
+        });
+
+        // 点击模态框外部关闭
+        document.getElementById('itemModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeItemModal();
+            }
+        });
+
+        document.getElementById('bidderModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBidderModal();
+            }
+        });
+
+        // 竞拍者输入框回车事件
+        document.getElementById('participantName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addParticipant();
+            }
+        });
+
+        // 初始化系统
+        init();
+    </script>
+</body>
+</html>
